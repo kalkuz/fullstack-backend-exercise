@@ -1,6 +1,8 @@
+/* eslint-disable import/extensions */
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import db from './db.js';
 
 const app = express();
 app.use(cors());
@@ -8,50 +10,25 @@ app.use(express.json());
 morgan.token('body', (req) => (req.method === 'POST' ? JSON.stringify(req.body) : ''));
 app.use(morgan(':method :url :status - :response-time ms :body'));
 
-let persons = [
-  {
-    id: 1,
-    name: 'Arto Hellas',
-    number: '040-123456',
-  },
-  {
-    id: 2,
-    name: 'Ada Lovelace',
-    number: '39-44-5323523',
-  },
-  {
-    id: 3,
-    name: 'Dan Abramov',
-    number: '12-43-234345',
-  },
-  {
-    id: 4,
-    name: 'Mary Poppendieck',
-    number: '39-23-6423122',
-  },
-];
-
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>');
 });
 
-app.get('/info', (request, response) => {
-  response.send(`Phonebook has info for ${persons.length} people`);
+app.get('/info', (request, response, next) => {
+  db.PersonModel.countDocuments()
+    .then((data) => response.send(`Phonebook has info for ${data} people`))
+    .catch((err) => next(err));
 });
 
-app.get('/api/persons', (request, response) => {
-  response.json(persons);
+app.get('/api/persons', (request, response, next) => {
+  db.Person.all(request, response, next);
 });
 
-app.get('/api/persons/:id', (request, response) => {
-  const { id } = request.params;
-
-  const person = persons.find((p) => p.id === Number(id));
-
-  response.json(person);
+app.get('/api/persons/:id', (request, response, next) => {
+  db.Person.get(request, response, next);
 });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', async (request, response, next) => {
   const { body } = request;
 
   if (!body.name) {
@@ -62,33 +39,25 @@ app.post('/api/persons', (request, response) => {
     response.status(400).json({
       error: 'number missing',
     });
-  } else if (persons.some((p) => p.name === body.name)) {
+  } else if (await db.PersonModel.findOne({ name: body.name })) {
     response.status(400).json({
       error: 'name must be unique',
     });
+  } else if (body.name?.length < 3) {
+    response.status(400).json({
+      error: `Person validation failed. name: Path \`name\` (\`${body.name}\`) is shorter than the minimum allowed length (3)`,
+    });
   } else {
-    const person = {
-      name: body.name,
-      number: body.number,
-      id: Math.floor(Math.random() * 1e12),
-    };
-
-    persons = persons.concat(person);
-
-    response.json(person);
+    db.Person.create(request, response, next);
   }
 });
 
-app.put('/api/persons/:id', (request, response) => {
-  const { id } = request.params;
-  persons = persons.map((p) => (p.id === Number(id) ? request.body : p));
-  response.send(`Updated person with id ${id}`);
+app.put('/api/persons/:id', (request, response, next) => {
+  db.Person.update(request, response, next);
 });
 
-app.delete('/api/persons/:id', (request, response) => {
-  const { id } = request.params;
-  persons = persons.filter((p) => p.id !== Number(id));
-  response.send(`Deleted person with id ${id}`);
+app.delete('/api/persons/:id', (request, response, next) => {
+  db.Person.delete(request, response, next);
 });
 
 const unknownEndpoint = (request, response) => {
@@ -97,7 +66,22 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint);
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error);
+
+  if (error.name === 'CastError') {
+    response.status(400).send({ error: 'malformatted id' });
+  }
+
+  next(error);
+};
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+db.connect()
+  .then(({ connection }) => console.log(`Connected to database ${connection.name}`))
+  .catch((err) => console.log(`Can't connect to database\n${err}`));
