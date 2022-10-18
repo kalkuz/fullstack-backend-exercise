@@ -1,0 +1,16 @@
+{
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "eslint.validate": [
+      "javascript"
+    ],
+    "cSpell.words": [
+      "Appbar",
+      "assignements",
+      "blockid",
+      "pathid",
+      "remx"
+    ]
+  }
+  
