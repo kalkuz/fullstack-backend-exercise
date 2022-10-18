@@ -10,7 +10,7 @@ const Person = mongoose.model('Persons', new Schema({
     type: String,
     validate: {
       validator(v) {
-        return v.length > 7 && /\d{2,3}-\d*/.test(v);
+        return v.length > 8 && /\d{2,3}-\d*/.test(v);
       },
       message: (props) => `${props.value} is not a valid phone number!`,
     },
