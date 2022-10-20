@@ -7,7 +7,7 @@ import db from './db.js';
 import routes from './routes';
 import { Config, Logger, Response } from './utils';
 import { Person, User } from './models';
-import { UnknownEndpoint } from './utils/Middleware.js';
+import { Auth, UnknownEndpoint } from './utils/Middleware.js';
 
 const App = express();
 App.use(json({ limit: '100kb' }))
@@ -23,6 +23,7 @@ App.get('/', (request, response) => {
 
 App.post('/', async (req, res) => {
   const { username, password } = req.body;
+
   const user = await User.findOne({ username });
   const passwordCorrect = user === null
     ? false
@@ -33,14 +34,17 @@ App.post('/', async (req, res) => {
   }
 
   const userForToken = {
-    username: user.username,
-    id: user._id,
+    usr: user._id,
+    iat: new Date().getTime(),
+    exp: new Date().getTime() + (60 * 60 * 24 * 365 * 1000),
   };
 
   const token = jwt.sign(userForToken, Config.JWT_SECRET);
 
   Response.success(res, { token, username: user.username, name: user.name }, 'Success');
 });
+
+App.use(Auth('all'));
 
 App.get('/info', (request, response, next) => {
   Person.countDocuments()
