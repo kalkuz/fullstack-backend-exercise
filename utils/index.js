@@ -1,6 +1,6 @@
-import Config from './Config';
-import Logger from './Logger';
-import Response from './Response';
+import Config from './Config.js';
+import Logger from './Logger.js';
+import Response from './Response.js';
 
 export {
   Config,

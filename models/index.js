@@ -1,6 +1,6 @@
-import Person from './Person.model';
-import Blog from './Blog.model';
-import User from './User.model';
+import Person from './Person.model.js';
+import Blog from './Blog.model.js';
+import User from './User.model.js';
 
 export {
   Person,
