@@ -4,9 +4,9 @@ import cors from 'cors';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from './db.js';
-import routes from './routes';
-import { Config, Logger, Response } from './utils';
-import { Person, User } from './models';
+import routes from './routes/index.js';
+import { Config, Logger, Response } from './utils/index.js';
+import { Person, User } from './models/index.js';
 import { Auth, UnknownEndpoint } from './utils/Middleware.js';
 
 const App = express();

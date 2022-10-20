@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import supertest from 'supertest';
-import App from '..';
+import App from '../index.js';
 
 const api = supertest(App);
 const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3IiOiI2MzRmZWIzZTIyM2U3OWI2M2UzMzRlYTQiLCJpYXQiOjE2NjYyNDk0ODg0NTYsImV4cCI6MTY5Nzc4NTQ4ODQ1Nn0.4L-sYqT1c8f4avdVd8jXqBAd85skKbU_y-4T_VXrv3Q';

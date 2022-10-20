@@ -1,5 +1,5 @@
-import { Person } from '../models';
-import { Response } from '../utils';
+import { Person } from '../models/index.js';
+import { Response } from '../utils/index.js';
 
 const read = {
   all: (req, res) => {
